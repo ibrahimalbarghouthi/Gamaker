@@ -44,7 +44,7 @@ services:
     container_name: swagger-ui
     image: swaggerapi/swagger-ui:latest
     ports:
-      - "8080:8080"
+      - "8020:8080"
     environment:
       - API_URL=http://localhost:3000/
     restart: always
@@ -53,8 +53,10 @@ services:
   gateway:
     image: octowink/krakend:latest
     ports:
-      - "8000:8000"
+      - "8080:8080"
       - "8090:8090"
+    volumes:
+      - ./krakend.json:/etc/krakend/krakend.json
 
 volumes:
   postgresql_data:
