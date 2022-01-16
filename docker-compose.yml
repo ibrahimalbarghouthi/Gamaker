@@ -1,0 +1,58 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  server:
+    image: postgrest/postgrest
+    ports:
+      - "3000:3000"
+    environment:
+      PGRST_DB_URI: postgres://octowink_auth_admin:root@postgres:5432/postgres
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: octowink_auth_admin #In production this role should not be the same as the one used for the connection
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:3000
+    depends_on:
+      - postgres
+
+  postgres:
+    image: bitnami/postgresql:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=postgres
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    volumes:
+      - 'postgresql_data:/bitnami/postgresql'
+      - './hack/init_postgres.sql:/docker-entrypoint-initdb.d/init.sql'
+
+  caddy:
+    image: abiosoft/caddy
+    restart: always
+    environment:
+      ACME_AGREE: "true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/Caddyfile
+      - caddy_certs:/root/.caddy
+
+  auth:
+    image: octowink/gotrue:1
+    build: .
+    env_file:
+      - dev.env
+    ports:
+      - "9999:9999"
+    expose:
+      - "9999"
+    depends_on:
+      - postgres
+
+volumes:
+  caddy_certs:
+  postgresql_data:
+    driver: local
