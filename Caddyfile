@@ -1,5 +1,0 @@
-gotrue.gamaker.com {
-  proxy / auth:9999 {
-    transparent
-  }
-}
