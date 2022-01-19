@@ -1,6 +1,6 @@
 version: "3.9"  # optional since v1.27.0
 services:
-  server_rest:
+  postgres_rest:
     image: postgrest/postgrest
     ports:
       - "3000:3000"
@@ -29,7 +29,7 @@ services:
       - ./init_postgres.sql:/docker-entrypoint-initdb.d/init.sql
 
   auth:
-    image: octowink/gotrue:1
+    image: octowink/gotrue:latest
     # build: .
     env_file:
       - dev.env
@@ -50,13 +50,22 @@ services:
     restart: always
 
 
-  gateway:
-    image: octowink/krakend:latest
+  kong:
+    image: 'bitnami/kong:latest'
     ports:
-      - "8080:8080"
-      - "8090:8090"
+      - '8000:8000'
+      - '8443:8443'
+    environment:
+      # Assume we don't want data persistence for simplicity purposes
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/opt/bitnami/kong/conf/kong.yml
     volumes:
-      - ./krakend.json:/etc/krakend/krakend.json
+      - ./kong.yml:/opt/bitnami/kong/conf/kong.yml
+
+  orchestrator:
+    image: octowink/orchestrator:latest
+    ports:
+      - "9090:9090"
 
 volumes:
   postgresql_data:

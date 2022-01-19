@@ -1,0 +1,33 @@
+_format_version: "1.1"
+
+plugins:
+- name: jwt
+  service: orchestrator
+  config:
+    secret_is_base64: false
+    run_on_preflight: true
+    uri_param_names: [jwt]
+
+- name: request-transformer
+  service: orchestrator
+  config:
+    remove:
+      querystring:
+      - jwt
+
+consumers:
+- username: base_jwt
+  custom_id: base_jwt_1
+
+jwt_secrets:
+- consumer: base_jwt
+  key: identity.gamaker.io
+  secret: changethismorethan32characterstring1
+
+services:
+- name: orchestrator
+  url: http://orchestrator:9090
+  routes:
+  - name: ws
+    paths:
+    - /ws
