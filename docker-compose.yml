@@ -54,7 +54,7 @@ services:
     image: 'bitnami/kong:latest'
     ports:
       - '8000:8000'
-      - '8443:8443'
+      - '8001:8001'
     environment:
       # Assume we don't want data persistence for simplicity purposes
       - KONG_DATABASE=off
@@ -67,6 +67,25 @@ services:
     ports:
       - "9090:9090"
 
+  prometheus:
+    image: bitnami/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+      - 'prometheus_data:/opt/bitnami/prometheus/data'
+
+  grafana:
+    image: bitnami/grafana:latest
+    ports:
+      - "3300:3300"
+    volumes:
+      - ./grafana.ini:/opt/bitnami/grafana/conf/grafana.ini
+      - 'grafana_data:/opt/bitnami/grafana/data'
+
+
 volumes:
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
   postgresql_data:
     driver: local
